@@ -4,6 +4,26 @@
 
 Simple Docker Based Home Server Configuration.
 
+The home server is being run on a Samsung NP350V5C "Netbook" from 2013 (my very first machine).
+
+It's glorious current specs are: Intel i3-3110M 2.4GHz quad-core CPU, a whopping 4GB DDR3 memory, 128GB SSD for boot drive and a 1TB external HDD.
+
+This machine is basically soldered into the wall with AC power and no battery. No Wi-Fi, running a 10-gig Ethernet cable on this bad boy.
+
+Also, I've removed its display so it's kinda a leaner C64.
+
+Services that are meant to be run are present in `./compose.yaml`. To spin up: `docker compose up -d` in the root directory.
+
+I've obviously excluded all instances of `.env` file from this repository. Fill it with your own values.
+
+The "archived" services are in `./services/` which I don't intend to run ATM. Barring `./services/immich/` (this beast needed it's own directory and separate configuration).
+
+For some services (like beets) which needed a long and separate configuration file, they have the `./config/` directory to them.
+
+Helper scripts (for notifications, alerting etc.) are placed in `./scripts/`.
+
+Wiki for most services is present below.
+
 ## Docker Socket Proxy
 
 <https://github.com/wollomatic/socket-proxy>
@@ -13,7 +33,7 @@ Simple Docker Based Home Server Configuration.
 Why? <https://reddit.com/r/Traefik/comments/1o0llw0/do_you_use_a_docker_socket_proxy/>
 
 - Containers have access to `docker.sock`, if something goes wrong with the image, bad actor can perform any malicious action
-- socket-proxy gives only certain selected permissions (least privilege)
+- `socket-proxy` gives only certain selected permissions (least privilege)
 
 ## Traefik - Reverse Proxy
 
@@ -75,7 +95,7 @@ Allows machines to connect to the Pangolin server via tunnels.
 
 Take restic backups (rclone, sftp, http).
 
-## Beszel - Lightweight server monitoring
+## Beszel - Lightweight Server Monitoring
 
 <https://github.com/henrygd/beszel>
 
@@ -88,13 +108,13 @@ Take restic backups (rclone, sftp, http).
 - Works very well with docker.sock
 - And gives you all the necessary data (cpu, ram, load, temp, bandwidth, swap)
 
-After launching beszel-hub and heading to <https://beszel.home.i0w.xyz/>,
+After launching beszel-hub and heading to <https://beszel.home.DOMAIN/>,
 
 - Hit "Add System"
 - Set an arbitary name like "agent-docker"
 - set "Host/IP" = "beszel-agent"
 - Copy the "Public Key" and replace the $BESZEL_AGENT_SSH_KEY env variable
-- Restart the beszel-agent servic
+- Restart the beszel-agent service.
 
 For the beszel-agent-intel-gpu, configure this kernel parameter on bare metal otherwise it shows "Failed to initialize PMU! (Permission denied)" error.
 
@@ -179,9 +199,9 @@ sudo find /srv/git -type f -exec chmod 644 {} \;
 
 <https://forgejo.org/docs/latest/admin/installation/docker/>
 
-To push an existing repo to forgejo's internal `/data/git/repositories` strcture,
+To push an existing repo to forgejo's internal `/data/git/repositories` structure,
 
-Copy your public key `cat ~/.ssh/git-homeserver.pub | wl-copy` and add it to `https://forgejo.home.i0w.xyz/user/settings/keys`
+Copy your public key `cat ~/.ssh/git-homeserver.pub | wl-copy` and add it to `https://forgejo.home.DOMAIN/user/settings/keys`
 
 Edit your `~/.ssh/config` to add,
 
@@ -228,7 +248,3 @@ Serves the build mkdocs site in `/srv`.
 <https://usememos.com/docs/installation/docker>
 
 Provides a nice way to take quick notes
-
----
-
-*Banner image source: <https://wallhaven.cc/w/rrkg9m>*
