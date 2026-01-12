@@ -1,12 +1,6 @@
-# 0x3110
+# *0x3110*
 
-<div
-  style="
-    width: 100%;
-    height: 80px;
-    background: url('https://w.wallhaven.cc/full/rr/wallhaven-rrkg9m.png');
-  ">
-</div>
+<img width="100%" height="500" alt="image" src="https://github.com/user-attachments/assets/f481b2a3-1874-437b-a7d6-667eec31c30d" />
 
 Simple Docker Based Home Server Configuration.
 
@@ -234,3 +228,7 @@ Serves the build mkdocs site in `/srv`.
 <https://usememos.com/docs/installation/docker>
 
 Provides a nice way to take quick notes
+
+---
+
+*Banner image source: <https://wallhaven.cc/w/rrkg9m>*
