@@ -63,6 +63,10 @@ For this service you need an external network: `docker network create traefik`
 
 The best torrent client.
 
+<img width="216" height="150" alt="image" src="https://github.com/user-attachments/assets/816bc30e-b15a-42f4-b2ba-a0a1259cb878" />
+<br>
+<em>qb stats as of Jan 2026 🏴‍☠️</em>
+
 ## Jellyfin - Media Library
 
 <https://github.com/jellyfin/jellyfin>
@@ -123,6 +127,8 @@ For the beszel-agent-intel-gpu, configure this kernel parameter on bare metal ot
 ```bash
 sudo sysctl kernel.perf_event_paranoid=0
 ```
+
+<img width="710" height="400" alt="image" src="https://github.com/user-attachments/assets/6ef84b78-bad3-4b60-8c8a-7cbcd34fd5b5" />
 
 ## `mount-point-alert.go`
 
