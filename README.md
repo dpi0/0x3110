@@ -2,7 +2,7 @@
 
 <img width="100%" height="500" alt="image" src="https://github.com/user-attachments/assets/f481b2a3-1874-437b-a7d6-667eec31c30d" />
 
-Simple Docker Based Home Server Configuration.
+Docker Based Home Server Configuration.
 
 The home server is being run on a Samsung NP350V5C "Netbook" from 2013 (my very first machine).
 
