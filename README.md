@@ -53,7 +53,7 @@ For this service you need an external network: `docker network create traefik`
 <https://crazymax.dev/diun/install/docker/>
 
 - Sends a periodic notification when a docker image has a newer version available
-- Using the telegram provider currently
+- Using the discord provider currently
 
 ## qBittorrent - Torrent Client
 
@@ -254,3 +254,7 @@ Serves the build mkdocs site in `/srv`.
 <https://usememos.com/docs/installation/docker>
 
 Provides a nice way to take quick notes
+
+---
+
+*Source for banner image: <https://wallhaven.cc/w/rrkg9m>*

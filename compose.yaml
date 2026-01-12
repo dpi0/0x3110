@@ -161,8 +161,6 @@ services:
       DIUN_PROVIDERS_DOCKER_WATCHBYDEFAULT: true # watch all containers by default (so that services don't require diun.enable=true label to be watched)
       DIUN_PROVIDERS_DOCKER_WATCHSTOPPED: false # watch stopped/exited containers
       DIUN_PROVIDERS_DOCKER_ENDPOINT: tcp://diun-docker-socket-proxy:2375
-      DIUN_NOTIF_TELEGRAM_TOKEN: $HOMELAB_TELEGRAM_BOT_TOKEN
-      DIUN_NOTIF_TELEGRAM_CHATIDS: $HOMELAB_TELEGRAM_CHAT_ID
       DIUN_NOTIF_DISCORD_WEBHOOKURL: $DIUN_NOTIF_DISCORD_WEBHOOKURL
       DIUN_WATCH_RUNONSTARTUP: true
     labels:
