@@ -179,7 +179,7 @@ services:
       - /data/qbittorrent/config:/config:rw
       - /data/qbittorrent/themes:/themes:rw
       - /hdd/Downloads:/hdd/Downloads:rw
-      - ./discord_qbit_notification.sh:/config/discord_qbit_notification.sh
+      - ./scripts/discord_qbit_notification.sh:/config/discord_qbit_notification.sh
     deploy:
       resources:
         limits:
@@ -517,7 +517,7 @@ services:
     container_name: beets
     volumes:
       - /data/beets/config:/data/config:rw
-      - ./beets-config.yaml:/data/config/config.yaml:rw
+      - ./config/beets-config.yaml:/data/config/config.yaml:rw
       - /data/beets/db:/data/db:rw
       - /data/beets/logs:/data/logs:rw
       - /hdd/Downloads/Music:/hdd/Downloads/Music:rw
