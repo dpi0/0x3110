@@ -1,0 +1,36 @@
+services:
+  forgejo-server:
+    image: codeberg.org/forgejo/forgejo:13.0.3
+    container_name: forgejo-server
+    restart: unless-stopped
+    ports:
+      - $FORGEJO_SSH_PORT:22
+    networks:
+      - traefik
+    volumes:
+      - /data/forgejo/server/data:/data
+      # - /srv/git:/data/git/repositories
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.25
+    environment:
+      USER_UID: $PUID
+      USER_GID: $PGID
+      FORGEJO__server__SSH_PORT: $FORGEJO_SSH_PORT
+      FORGEJO__server__SSH_DOMAIN: forgejo.home.$DOMAIN
+      FORGEJO__server__LANDING_PAGE: explore # Landing page for unauthenticated users [home, explore, organizations, login, custom]
+      FORGEJO__openid__ENABLE_OPENID_SIGNIN: false # Allow authentication via OpenID
+      FORGEJO__oauth2_client__UPDATE_AVATAR: true # Update avatar if available from the OAuth2 provider.
+      FORGEJO__service__DISABLE_REGISTRATION: true # after which only admin can create accounts for users.
+      FORGEJO__service__ENABLE_PASSWORD_SIGNIN_FORM: true # Enable this to allow login with username/password, otherwise OAuth2 only
+      FORGEJO__service__ENABLE_BASIC_AUTHENTICATION: false # Disable this to disallow authentication using HTTP BASIC and the user’s password
+      FORGEJO__repository__ENABLE_PUSH_CREATE_USER: true # Allow users to push local repositories to Forgejo and have them automatically created for a user
+    labels:
+      traefik.enable: true
+      traefik.http.routers.forgejo.entrypoints: websecure
+      traefik.http.routers.forgejo.rule: "Host(`forgejo.home.$DOMAIN`)"
+      traefik.http.services.forgejo.loadbalancer.server.port: 3000

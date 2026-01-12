@@ -1,0 +1,21 @@
+services:
+  cgit:
+    image: ghcr.io/dpi0/cgit-docker:main
+    container_name: cgit
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - /srv/git:/opt/git:rw
+      - ./cgit-config:/opt/cgit/cgitrc:rw
+      - ./cgit-30-fix-permissions.sh:/docker-entrypoint.d/30-fix-permissions.sh:rw
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    labels:
+      traefik.enable: true
+      traefik.http.routers.git.entrypoints: websecure
+      traefik.http.routers.git.rule: "Host(`git.home.$DOMAIN`)"
+      traefik.http.services.git.loadbalancer.server.port: 80

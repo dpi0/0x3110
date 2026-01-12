@@ -1,0 +1,23 @@
+services:
+  beszel-agent-intel-gpu:
+    depends_on:
+      - beszel-hub
+      - beszel-agent-docker-socket-proxy
+    image: henrygd/beszel-agent-intel:0.16.0
+    container_name: beszel-agent-intel-gpu
+    networks:
+      - beszel-agent-docker-socket-proxy
+      - beszel
+    cap_add:
+      - CAP_PERFMON
+    volumes:
+      - /data/beszel/agent-intel-gpu/data:/var/lib/beszel-agent:rw
+    environment:
+      KEY: $BESZEL_AGENT_SSH_KEY_INTEL_GPU
+      LOG_LEVEL: error
+      DOCKER_HOST: tcp://beszel-agent-docker-socket-proxy:2375
+      INTEL_GPU_DEVICE: drm:/dev/dri/card0
+    devices:
+      - /dev/dri/card0:/dev/dri/card0
+    labels:
+      traefik.enable: false

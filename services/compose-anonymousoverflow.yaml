@@ -1,0 +1,40 @@
+services:
+  overflow:
+    image: git.canine.tools/canine.tools/anonymous_overflow:latest
+    container_name: overflow
+    restart: unless-stopped
+    networks:
+      - traefik
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ulimits:
+      nofile:
+        soft: 4096
+        hard: 8192
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: 0.25
+      restart_policy:
+        condition: on-failure
+    env_file:
+      - .env
+    environment:
+      APP_URL: "https://o.$DOMAIN"
+      JWT_SIGNING_SECRET: $OVERFLOW_JWT_SIGNING_SECRET
+    labels:
+      traefik.enable: true
+      traefik.http.routers.overflow.entrypoints: websecure
+      traefik.http.routers.overflow.rule: "Host(`o.$DOMAIN`)"
+      traefik.http.services.overflow.loadbalancer.server.port: 8080

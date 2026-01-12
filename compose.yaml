@@ -1,0 +1,559 @@
+networks:
+  traefik:
+    external: true
+    name: traefik # network has to be created only once before starting - docker network create traefik
+  traefik-docker-socket-proxy:
+    driver: bridge
+    internal: true
+    attachable: false
+  diun-docker-socket-proxy:
+    driver: bridge
+    internal: true
+    attachable: false
+  backrest-docker-socket-proxy:
+    driver: bridge
+    internal: true
+    attachable: false
+  notes-nginx: # NOTE: for newt
+    driver: bridge
+  beszel-agent-docker-socket-proxy:
+    driver: bridge
+    internal: true
+    attachable: false
+  beszel:
+    driver: bridge
+services:
+  traefik-docker-socket-proxy:
+    image: wollomatic/socket-proxy:1.10.0
+    container_name: traefik-docker-socket-proxy
+    restart: unless-stopped
+    networks:
+      - traefik-docker-socket-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+    user: 65534:$DOCKER_SOCKET_PROXY_GID # get the gid from: getent group docker
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25 # INFO: same as 250m (millicores)
+    command:
+      - -loglevel=info
+      - -allowfrom=traefik # for traefik only
+      - -listenip=0.0.0.0
+      - -allowGET=/v1\..{1,2}/(version|containers/.*|events.*)
+      - -shutdowngracetime=5
+      - -watchdoginterval=600
+      - -stoponwatchdog
+  traefik:
+    depends_on:
+      - traefik-docker-socket-proxy
+    image: traefik:v3.6.0
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    networks:
+      - traefik
+      - traefik-docker-socket-proxy
+    volumes:
+      - /data/traefik/certs:/traefik/certs:rw
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      CF_DNS_API_TOKEN: $CLOUDFLARE_DNS_API_TOKEN # only needed if certResolver = cloudflare
+      TZ: $TZ
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: 0.5
+    command:
+      - --global.checknewversion=false
+      - --global.sendanonymoususage=false
+      - --api.dashboard=false
+      - --log.level=ERROR
+      - --accesslog=true
+      - --ping=true
+      - --providers.docker.endpoint=tcp://traefik-docker-socket-proxy:2375
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.watch=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.http.tls.options=default
+      - --entrypoints.websecure.http.tls.certResolver=cloudflare # or letsencrypt if server IP = public
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --certificatesresolvers.cloudflare.acme.email=dpi0.dev@proton.me
+      - --certificatesresolvers.cloudflare.acme.storage=/traefik/certs/acme.json
+      - --certificatesresolvers.cloudflare.acme.caServer=https://acme-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.cloudflare.acme.keyType=EC256
+      - --certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53
+  diun-docker-socket-proxy:
+    image: wollomatic/socket-proxy:1.10.0
+    container_name: diun-docker-socket-proxy
+    restart: unless-stopped
+    networks:
+      - diun-docker-socket-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    user: 65534:$DOCKER_SOCKET_PROXY_GID
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    command:
+      - -loglevel=info
+      - -allowfrom=diun
+      - -listenip=0.0.0.0
+      - -allowGET=/v1\.[0-9]+/(containers.*|images.*|events.*|info|version)|/_ping
+      - -allowHEAD=/_ping
+      - -watchdoginterval=300
+      - -stoponwatchdog
+      - -shutdowngracetime=10
+  diun:
+    depends_on:
+      - diun-docker-socket-proxy
+    image: crazymax/diun:4.31.0
+    container_name: diun
+    restart: unless-stopped
+    networks:
+      - traefik
+      - diun-docker-socket-proxy
+    volumes:
+      - /data/diun/data:/data:rw
+    hostname: "0x3110"
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_OVERRIDE # Allows processes to bypass file read, write, and execute permission checks.
+    security_opt:
+      - no-new-privileges
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    environment:
+      TZ: $TZ
+      LOG_LEVEL: info
+      LOG_JSON: false
+      DIUN_WATCH_WORKERS: 20
+      DIUN_WATCH_SCHEDULE: "0 */12 * * *" # check every 12th hour, every day
+      DIUN_PROVIDERS_DOCKER: true
+      DIUN_PROVIDERS_DOCKER_WATCHBYDEFAULT: true # watch all containers by default (so that services don't require diun.enable=true label to be watched)
+      DIUN_PROVIDERS_DOCKER_WATCHSTOPPED: false # watch stopped/exited containers
+      DIUN_PROVIDERS_DOCKER_ENDPOINT: tcp://diun-docker-socket-proxy:2375
+      DIUN_NOTIF_TELEGRAM_TOKEN: $HOMELAB_TELEGRAM_BOT_TOKEN
+      DIUN_NOTIF_TELEGRAM_CHATIDS: $HOMELAB_TELEGRAM_CHAT_ID
+      DIUN_NOTIF_DISCORD_WEBHOOKURL: $DIUN_NOTIF_DISCORD_WEBHOOKURL
+      DIUN_WATCH_RUNONSTARTUP: true
+    labels:
+      traefik.enable: false
+  qbittorrent:
+    depends_on:
+      - traefik
+    image: lscr.io/linuxserver/qbittorrent:amd64-5.1.2
+    container_name: qbittorrent
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - /data/qbittorrent/config:/config:rw
+      - /data/qbittorrent/themes:/themes:rw
+      - /hdd/Downloads:/hdd/Downloads:rw
+      - ./discord_qbit_notification.sh:/config/discord_qbit_notification.sh
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.5
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+      WEBUI_PORT: 8080
+      TORRENTING_PORT: 6881
+    labels:
+      traefik.enable: true
+      traefik.http.routers.qbittorrent.entrypoints: websecure
+      traefik.http.routers.qbittorrent.rule: "Host(`qb.home.$DOMAIN`)"
+      traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
+  qbittorrent-2:
+    depends_on:
+      - traefik
+    image: lscr.io/linuxserver/qbittorrent:amd64-5.1.2
+    container_name: qbittorrent-2
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - /data/qbittorrent2/config:/config:rw
+      - /data/qbittorrent2/themes:/themes:rw
+      - /hdd/Downloads:/hdd/Downloads:rw
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.5
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+      WEBUI_PORT: 8080
+      TORRENTING_PORT: 6881
+    labels:
+      traefik.enable: true
+      traefik.http.routers.qbittorrent2.entrypoints: websecure
+      traefik.http.routers.qbittorrent2.rule: "Host(`download.home.$DOMAIN`)"
+      traefik.http.services.qbittorrent2.loadbalancer.server.port: 8080
+  jellyfin:
+    image: jellyfin/jellyfin:10.11.2
+    container_name: jellyfin
+    restart: unless-stopped
+    ports:
+      - 8096:8096
+    networks:
+      - traefik
+    volumes:
+      - /data/jellyfin/config:/config:rw
+      - /data/jellyfin/metadata:/config/metadata:rw
+      - /data/jellyfin/cache:/cache:rw
+      - /hdd/Media/:/hdd/Media:rw
+      - /hdd/Downloads:/hdd/Downloads:rw
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+    user: $PUID:$PGID
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: 0.5
+    labels:
+      traefik.enable: true
+      traefik.http.routers.jellyfin.entrypoints: websecure
+      traefik.http.routers.jellyfin.rule: "Host(`jellyfin.home.$DOMAIN`) || Host(`jellyfin.ts.$DOMAIN`)"
+  syncthing:
+    depends_on:
+      - traefik
+    image: lscr.io/linuxserver/syncthing:version-v2.0.10
+    container_name: syncthing
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - /data/syncthing/config:/config:rw
+      - /hdd/Backup/Syncthing:/hdd/Backup/Syncthing:rw
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+    read_only: false
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    tmpfs:
+      - /tmp
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.25
+    labels:
+      traefik.enable: true
+      traefik.http.routers.syncthing.entrypoints: websecure
+      traefik.http.routers.syncthing.rule: "Host(`syncthing.home.$DOMAIN`)"
+  backrest-docker-socket-proxy:
+    image: wollomatic/socket-proxy:1.10.0
+    container_name: backrest-docker-socket-proxy
+    restart: unless-stopped
+    networks:
+      - backrest-docker-socket-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    user: 65534:$DOCKER_SOCKET_PROXY_GID
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    command:
+      - -loglevel=info
+      - -allowfrom=backrest
+      - -listenip=0.0.0.0
+      - -allowGET=/v1\.[0-9]+/(containers.*|events.*|info|version)|/_ping
+      - -allowPOST=/v1\.[0-9]+/containers/[a-zA-Z0-9_-]+/(start|stop|restart)
+      - -allowHEAD=/_ping
+      - -watchdoginterval=300
+      - -stoponwatchdog
+      - -shutdowngracetime=10
+  backrest:
+    depends_on:
+      - backrest-docker-socket-proxy
+      - traefik
+    image: garethgeorge/backrest:v1.10.1
+    container_name: backrest
+    restart: unless-stopped
+    ports:
+      - 9898:9898
+    networks:
+      - traefik
+      - backrest-docker-socket-proxy
+    volumes:
+      - /data/backrest/config:/config:rw
+      - /data/backrest/data:/data:rw
+      - /data/backrest/cache:/cache:rw
+      - /data/backrest/tmp:/tmp:rw
+      - /data/backrest/config/rclone:/root/.config/rclone:rw
+      - /data:/0x3110/data:ro
+      - /data/immich:/0x3110/data/immich:rw
+      - /hdd/Media/Immich/backups:/0x3110/hdd/Media/Immich/backups:ro
+      - /hdd/Media/Immich/library:/0x3110/hdd/Media/Immich/library:ro
+      - /space/Backup:/0x3110/space/Backup:rw
+    hostname: "0x3110"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: 0.25
+    environment:
+      TZ: $TZ
+      DOCKER_HOST: tcp://backrest-docker-socket-proxy:2375
+      RESTIC_PASSWORD_DPI0DEV_GOOGLE: $RESTIC_PASSWORD_DPI0DEV_GOOGLE
+      HOMELAB_REPO_PASSWORD: $HOMELAB_REPO_PASSWORD
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik # NOTE: very important to have when multiple networks are present
+      traefik.http.routers.backrest.entrypoints: websecure
+      traefik.http.routers.backrest.rule: "Host(`backrest.home.$DOMAIN`)"
+      traefik.http.services.backrest.loadbalancer.server.port: 9898
+  beszel-agent-docker-socket-proxy:
+    image: wollomatic/socket-proxy:1.10.0
+    container_name: beszel-agent-docker-socket-proxy
+    restart: unless-stopped
+    networks:
+      - beszel-agent-docker-socket-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    user: 65534:$DOCKER_SOCKET_PROXY_GID
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    command:
+      - -loglevel=info
+      - -allowfrom=beszel-agent # allow only hostname "beszel-agent" to connect
+      - -listenip=0.0.0.0
+      - -allowGET=^/(version|containers/(json|[a-f0-9]+/(stats.*|logs.*|json)))$
+      - -watchdoginterval=3600 # check once per hour for socket availability
+      - -stoponwatchdog # halt program on error and let compose restart it
+      - -shutdowngracetime=5 # wait 5 seconds before shutting down
+  beszel-hub:
+    depends_on:
+      - traefik
+    image: henrygd/beszel:0.16.0
+    container_name: beszel-hub
+    restart: unless-stopped
+    networks:
+      - traefik
+      - beszel
+    volumes:
+      - /data/beszel/hub/data:/beszel_data
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    environment:
+      APP_URL: "https://beszel.home.$DOMAIN"
+      AUTO_LOGIN: "dpi0.dev@proton.me" # have the user with this email, be auto logged in
+      USER_EMAIL: "dpi0.dev@proton.me" # email of the first (admin) user
+      USER_PASSWORD: $BESZEL_ADMIN_USER_PASSWORD # password of the first (admin) user
+      DISABLE_PASSWORD_AUTH: false # disable password and use OAuth
+      SHARE_ALL_SYSTEMS: false
+      USER_CREATION: false
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik
+      traefik.http.routers.beszel-hub.entrypoints: websecure
+      traefik.http.routers.beszel-hub.rule: "Host(`beszel.home.$DOMAIN`)"
+  beszel-agent:
+    depends_on:
+      - beszel-hub
+      - beszel-agent-docker-socket-proxy
+    image: henrygd/beszel-agent:0.16.0
+    container_name: beszel-agent
+    restart: unless-stopped
+    hostname: beszel-agent
+    networks:
+      - beszel-agent-docker-socket-proxy
+      - beszel
+    volumes:
+      - /data/beszel/agent/data:/var/lib/beszel-agent:rw
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    environment:
+      KEY: $BESZEL_AGENT_SSH_KEY
+      LOG_LEVEL: error
+      DOCKER_HOST: tcp://beszel-agent-docker-socket-proxy:2375
+    labels:
+      traefik.enable: false
+  navidrome:
+    depends_on:
+      - traefik
+    image: deluan/navidrome:0.58.5
+    container_name: navidrome
+    restart: unless-stopped
+    ports:
+      - 4533:4533
+    networks:
+      - traefik
+    volumes:
+      - /data/navidrome/data:/data:rw
+      - /hdd/Media/Music/:/music:rw
+    user: 1000:1000
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: 0.25
+    environment:
+      # https://www.navidrome.org/docs/usage/configuration-options/#available-options
+      ND_LOGLEVEL: warn
+      ND_BASEURL: "https://music.home.$DOMAIN"
+      ND_ENABLEINSIGHTSCOLLECTOR: true
+      ND_DEFAULTTHEME: "Spotify-ish"
+      ND_LASTFM_ENABLED: true
+      ND_LASTFM_APIKEY: $ND_LASTFM_APIKEY
+      ND_LASTFM_SECRET: $ND_LASTFM_SECRET
+      ND_SCANNER_ENABLED: true # true means Automatic scanning enabled
+      ND_SCANNER_SCHEDULE: 0 # 0 means there is no scanning schedule
+      ND_SCANNER_SCANONSTARTUP: true
+      ND_SESSIONTIMEOUT: 72h
+      ND_SHAREURL: "https://music.home.$DOMAIN"
+      ND_UILOGINBACKGROUNDURL: "https://images.unsplash.com/photo-1602833703282-8f068d789005?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.navidrome.entrypoints: websecure
+      traefik.http.routers.navidrome.rule: "Host(`music.home.$DOMAIN`) || Host(`music.ts.$DOMAIN`)"
+      traefik.http.services.navidrome.loadbalancer.server.port: 4533
+  slskd:
+    depends_on:
+      - traefik
+    image: slskd/slskd:0.24.0
+    container_name: slskd
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - /data/slskd/config:/config:rw
+      - /hdd/Downloads/Music/Soulseek:/hdd/Downloads/Music/Soulseek:rw
+      - /hdd/Media/Music:/hdd/Media/Music:ro
+    user: 1000:1000
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.5
+    environment:
+      # https://github.com/slskd/slskd/blob/master/docs/config.md
+      SLSKD_REMOTE_CONFIGURATION: true
+      SLSKD_SLSK_USERNAME: $SLSKD_SLSK_USERNAME
+      SLSKD_SLSK_PASSWORD: $SLSKD_SLSK_PASSWORD
+      SLSKD_NO_AUTH: false
+      SLSKD_USERNAME: $SLSKD_USERNAME
+      SLSKD_PASSWORD: $SLSKD_PASSWORD
+      SLSKD_JWT_KEY: $SLSKD_JWT_KEY
+      SLSKD_DOWNLOADS_DIR: /hdd/Downloads/Music/Soulseek/Complete
+      SLSKD_INCOMPLETE_DIR: /hdd/Downloads/Music/Soulseek/Incomplete
+      SLSKD_SHARED_DIR: /hdd/Media/Music # NOTE: Needs to be an absolute path
+      SLSKD_NO_CONFIG_WATCH: true # Don't watch the configuration file for changes
+    labels:
+      traefik.enable: true
+      traefik.http.routers.slskd.entrypoints: websecure
+      traefik.http.routers.slskd.rule: "Host(`slskd.home.$DOMAIN`)"
+      traefik.http.services.slskd.loadbalancer.server.port: 5030
+  beets:
+    # image: lscr.io/linuxserver/beets:2.5.1
+    image: ghcr.io/dpi0/beets-docker:17247b2
+    container_name: beets
+    volumes:
+      - /data/beets/config:/data/config:rw
+      - ./beets-config.yaml:/data/config/config.yaml:rw
+      - /data/beets/db:/data/db:rw
+      - /data/beets/logs:/data/logs:rw
+      - /hdd/Downloads/Music:/hdd/Downloads/Music:rw
+      - /hdd/Media/Music:/hdd/Media/Music:rw
+    user: "1000:1000"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: 1.0
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+      BEETSDIR: /data/config
+    labels:
+      traefik.enable: false # NOTE: I've removed the beets "web" plugin. So no WEB UI.
+  notes-nginx:
+    depends_on:
+      - traefik
+    image: nginx:1.29.3
+    container_name: notes-nginx
+    restart: unless-stopped
+    networks:
+      - traefik
+      - notes-nginx
+    volumes:
+      - /srv/notes:/usr/share/nginx/html:ro
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik
+      traefik.http.routers.notes-nginx.entrypoints: websecure
+      traefik.http.routers.notes-nginx.rule: "Host(`notes.home.$DOMAIN`)"
+      traefik.http.services.notes-nginx.loadbalancer.server.port: 80

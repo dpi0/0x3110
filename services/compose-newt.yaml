@@ -1,0 +1,18 @@
+services:
+  newt:
+    image: fosrl/newt:1.6.0
+    container_name: newt
+    restart: unless-stopped
+    networks:
+      - notes-nginx
+    environment:
+      PANGOLIN_ENDPOINT: https://t.$DOMAIN
+      NEWT_ID: $NEWT_ID_PANGOLIN
+      NEWT_SECRET: $NEWT_SECRET_PANGOLIN
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    labels:
+      traefik.enable: false

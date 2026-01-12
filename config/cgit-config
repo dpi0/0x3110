@@ -1,0 +1,11 @@
+css=/cgit.css
+logo=/cgit.png
+virtual-root=/
+root-title=Homelab Git
+root-desc=Browse hosted Git repositories
+
+# Point cgit to repos inside /git (mapped from host)
+repo.path=/git/notes.git
+repo.url=notes
+repo.desc=Personal notes repository
+repo.owner=git

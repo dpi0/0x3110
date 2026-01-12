@@ -1,0 +1,36 @@
+services:
+  memos:
+    depends_on:
+      - traefik
+    image: neosmemo/memos:0.25.2
+    container_name: memos
+    restart: unless-stopped
+    networks:
+      - traefik
+      # - memos # NOTE: for newt
+    volumes:
+      - /data/memos/data:/var/opt/memos:rw
+    environment:
+      MEMOS_PORT: 5230
+      MEMOS_DATA: /var/opt/memos
+      MEMOS_DRIVER: sqlite
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_OVERRIDE # Allows processes to bypass file read, write, and execute permission checks.
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: 0.25
+    labels:
+      traefik.enable: true
+      traefik.http.routers.memos.entrypoints: websecure
+      traefik.http.routers.memos.rule: "Host(`memos.home.$DOMAIN`)"
+      traefik.http.services.memos.loadbalancer.server.port: 5230
