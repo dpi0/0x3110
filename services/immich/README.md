@@ -23,14 +23,14 @@ wget -O .env https://github.com/immich-app/immich/releases/latest/download/examp
 - Add,
 
 ```bash
-EXT_PHOTOS=/hdd/Media/Photos
-EXT_VIDEOS=/hdd/Media/Videos
+EXT_PHOTOS=/hdd/Library/Photos
+EXT_VIDEOS=/hdd/Library/Videos
 ```
 
 - Replace,
 
 ```bash
-UPLOAD_LOCATION=/hdd/Media/Immich
+UPLOAD_LOCATION=/hdd/Library/Immich
 DB_DATA_LOCATION=/opt/docker/data/immich/postgres
 TZ=Asia/Kolkata
 IMMICH_VERSION=v2.3.1

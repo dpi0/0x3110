@@ -11,7 +11,7 @@ services:
     cap_add:
       - CAP_PERFMON
     volumes:
-      - /data/beszel/agent-intel-gpu/data:/var/lib/beszel-agent:rw
+      - /data/beszel/agent-intel-gpu/data:/var/lib/beszel-agent
     environment:
       KEY: $BESZEL_AGENT_SSH_KEY_INTEL_GPU
       LOG_LEVEL: error

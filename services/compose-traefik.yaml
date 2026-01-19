@@ -1,0 +1,77 @@
+services:
+  traefik-docker-socket-proxy:
+    image: wollomatic/socket-proxy:1.10.0
+    container_name: traefik-docker-socket-proxy
+    restart: unless-stopped
+    networks:
+      - traefik-docker-socket-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+    user: 65534:$DOCKER_SOCKET_PROXY_GID # get the gid from: getent group docker
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25 # INFO: same as 250m (millicores)
+    command:
+      - -loglevel=info
+      - -allowfrom=traefik # for traefik only
+      - -listenip=0.0.0.0
+      - -allowGET=/v1\..{1,2}/(version|containers/.*|events.*)
+      - -shutdowngracetime=5
+      - -watchdoginterval=600
+      - -stoponwatchdog
+  traefik:
+    depends_on:
+      - traefik-docker-socket-proxy
+    image: traefik:v3.6.0
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    networks:
+      - traefik
+      - traefik-docker-socket-proxy
+    volumes:
+      - /data/traefik/certs:/traefik/certs
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      CF_DNS_API_TOKEN: $CLOUDFLARE_DNS_API_TOKEN # only needed if certResolver = cloudflare
+      TZ: $TZ
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: 0.5
+    command:
+      - --global.checknewversion=false
+      - --global.sendanonymoususage=false
+      - --api.dashboard=false
+      - --log.level=ERROR
+      - --accesslog=true
+      - --ping=true
+      - --providers.docker.endpoint=tcp://traefik-docker-socket-proxy:2375
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.watch=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.http.tls.options=default
+      - --entrypoints.websecure.http.tls.certResolver=cloudflare # or letsencrypt if server IP = public
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --certificatesresolvers.cloudflare.acme.email=dpi0.dev@proton.me
+      - --certificatesresolvers.cloudflare.acme.storage=/traefik/certs/acme.json
+      - --certificatesresolvers.cloudflare.acme.caServer=https://acme-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.cloudflare.acme.keyType=EC256
+      - --certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53,1.0.0.1:53

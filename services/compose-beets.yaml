@@ -1,0 +1,25 @@
+services:
+  beets:
+    # image: lscr.io/linuxserver/beets:2.5.1
+    image: ghcr.io/dpi0/beets-docker:17247b2
+    container_name: beets
+    volumes:
+      - /data/beets/config:/data/config
+      - ../config/beets-config.yaml:/data/config/config.yaml
+      - /data/beets/db:/data/db
+      - /data/beets/logs:/data/logs
+      - /hdd/Downloads/Music:/hdd/Downloads/Music
+      - /hdd/Library/Music:/hdd/Library/Music
+    user: "1000:1000"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: 1.0
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+      BEETSDIR: /data/config
+    labels:
+      traefik.enable: false # NOTE: I've removed the beets "web" plugin. So no WEB UI.

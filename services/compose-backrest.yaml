@@ -1,0 +1,70 @@
+services:
+  backrest-docker-socket-proxy:
+    image: wollomatic/socket-proxy:1.10.0
+    container_name: backrest-docker-socket-proxy
+    restart: unless-stopped
+    networks:
+      - backrest-docker-socket-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    user: 65534:$DOCKER_SOCKET_PROXY_GID
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    command:
+      - -loglevel=info
+      - -allowfrom=backrest
+      - -listenip=0.0.0.0
+      - -allowGET=/v1\.[0-9]+/(containers.*|events.*|info|version)|/_ping
+      - -allowPOST=/v1\.[0-9]+/containers/[a-zA-Z0-9_-]+/(start|stop|restart)
+      - -allowHEAD=/_ping
+      - -watchdoginterval=300
+      - -stoponwatchdog
+      - -shutdowngracetime=10
+  backrest:
+    depends_on:
+      - backrest-docker-socket-proxy
+      - traefik
+    image: garethgeorge/backrest:v1.10.1
+    container_name: backrest
+    restart: unless-stopped
+    ports:
+      - 9898:9898
+    networks:
+      - traefik
+      - backrest-docker-socket-proxy
+    volumes:
+      - /data/backrest/config:/config
+      - /data/backrest/data:/data
+      - /data/backrest/cache:/cache
+      - /data/backrest/tmp:/tmp
+      - /data/backrest/config/rclone:/root/.config/rclone
+      - /data:/0x3110/data:ro
+      - /data/immich:/0x3110/data/immich
+      - /hdd/Immich/backups:/0x3110/hdd/Immich/backups:ro
+      - /hdd/Immich/library:/0x3110/hdd/Immich/library:ro
+      - /space/Backup:/0x3110/space/Backup
+    hostname: "0x3110"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: 0.25
+    environment:
+      TZ: $TZ
+      DOCKER_HOST: tcp://backrest-docker-socket-proxy:2375
+      RESTIC_PASSWORD_DPI0DEV_GOOGLE: $RESTIC_PASSWORD_DPI0DEV_GOOGLE
+      HOMELAB_REPO_PASSWORD: $HOMELAB_REPO_PASSWORD
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik # NOTE: very important to have when multiple networks are present
+      traefik.http.routers.backrest.entrypoints: websecure
+      traefik.http.routers.backrest.rule: "Host(`backrest.home.$DOMAIN`)"
+      traefik.http.services.backrest.loadbalancer.server.port: 9898

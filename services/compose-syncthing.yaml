@@ -1,0 +1,36 @@
+services:
+  syncthing:
+    depends_on:
+      - traefik
+    image: lscr.io/linuxserver/syncthing:version-v2.0.10
+    container_name: syncthing
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - /data/syncthing/config:/config
+      - /hdd/Backup/Syncthing:/hdd/Backup/Syncthing
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+    read_only: false
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    tmpfs:
+      - /tmp
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.25
+    labels:
+      traefik.enable: true
+      traefik.http.routers.syncthing.entrypoints: websecure
+      traefik.http.routers.syncthing.rule: "Host(`syncthing.home.$DOMAIN`)"

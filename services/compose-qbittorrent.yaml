@@ -1,0 +1,58 @@
+services:
+  qbittorrent:
+    depends_on:
+      - traefik
+    image: lscr.io/linuxserver/qbittorrent:amd64-5.1.2
+    container_name: qbittorrent
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - /data/qbittorrent/config:/config
+      - /data/qbittorrent/themes:/themes
+      - /hdd/Downloads:/hdd/Downloads
+      - ../scripts/discord_qbit_notification.sh:/config/discord_qbit_notification.sh
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.5
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+      WEBUI_PORT: 8080
+      TORRENTING_PORT: 6881
+    labels:
+      traefik.enable: true
+      traefik.http.routers.qbittorrent.entrypoints: websecure
+      traefik.http.routers.qbittorrent.rule: "Host(`qb.home.$DOMAIN`)"
+      traefik.http.services.qbittorrent.loadbalancer.server.port: 8080
+  # qbittorrent-2:
+  #   depends_on:
+  #     - traefik
+  #   image: lscr.io/linuxserver/qbittorrent:amd64-5.1.2
+  #   container_name: qbittorrent-2
+  #   restart: unless-stopped
+  #   networks:
+  #     - traefik
+  #   volumes:
+  #     - /data/qbittorrent2/config:/config
+  #     - /data/qbittorrent2/themes:/themes
+  #     - /hdd/Downloads:/hdd/Downloads
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 256M
+  #         cpus: 0.5
+  #   environment:
+  #     PUID: $PUID
+  #     PGID: $PGID
+  #     TZ: $TZ
+  #     WEBUI_PORT: 8080
+  #     TORRENTING_PORT: 6881
+  #   labels:
+  #     traefik.enable: true
+  #     traefik.http.routers.qbittorrent2.entrypoints: websecure
+  #     traefik.http.routers.qbittorrent2.rule: "Host(`download.home.$DOMAIN`)"
+  #     traefik.http.services.qbittorrent2.loadbalancer.server.port: 8080

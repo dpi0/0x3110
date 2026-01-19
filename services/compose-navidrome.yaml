@@ -1,0 +1,40 @@
+services:
+  navidrome:
+    depends_on:
+      - traefik
+    image: deluan/navidrome:0.58.5
+    container_name: navidrome
+    restart: unless-stopped
+    ports:
+      - 4533:4533
+    networks:
+      - traefik
+    volumes:
+      - /data/navidrome/data:/data
+      - /hdd/Library/Music/:/music
+    user: 1000:1000
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: 0.25
+    environment:
+      # https://www.navidrome.org/docs/usage/configuration-options/#available-options
+      ND_LOGLEVEL: warn
+      ND_BASEURL: "https://music.home.$DOMAIN"
+      ND_ENABLEINSIGHTSCOLLECTOR: true
+      ND_DEFAULTTHEME: "Spotify-ish"
+      ND_LASTFM_ENABLED: true
+      ND_LASTFM_APIKEY: $ND_LASTFM_APIKEY
+      ND_LASTFM_SECRET: $ND_LASTFM_SECRET
+      ND_SCANNER_ENABLED: true # true means Automatic scanning enabled
+      ND_SCANNER_SCHEDULE: 0 # 0 means there is no scanning schedule
+      ND_SCANNER_SCANONSTARTUP: true
+      ND_SESSIONTIMEOUT: 72h
+      ND_SHAREURL: "https://music.home.$DOMAIN"
+      ND_UILOGINBACKGROUNDURL: "https://images.unsplash.com/photo-1602833703282-8f068d789005?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.navidrome.entrypoints: websecure
+      traefik.http.routers.navidrome.rule: "Host(`music.home.$DOMAIN`) || Host(`music.ts.$DOMAIN`)"
+      traefik.http.services.navidrome.loadbalancer.server.port: 4533

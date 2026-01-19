@@ -1,0 +1,81 @@
+services:
+  beszel-agent-docker-socket-proxy:
+    image: wollomatic/socket-proxy:1.10.0
+    container_name: beszel-agent-docker-socket-proxy
+    restart: unless-stopped
+    networks:
+      - beszel-agent-docker-socket-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    user: 65534:$DOCKER_SOCKET_PROXY_GID
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    command:
+      - -loglevel=info
+      - -allowfrom=beszel-agent # allow only hostname "beszel-agent" to connect
+      - -listenip=0.0.0.0
+      - -allowGET=^/(version|containers/(json|[a-f0-9]+/(stats.*|logs.*|json)))$
+      - -watchdoginterval=3600 # check once per hour for socket availability
+      - -stoponwatchdog # halt program on error and let compose restart it
+      - -shutdowngracetime=5 # wait 5 seconds before shutting down
+  beszel-hub:
+    depends_on:
+      - traefik
+    image: henrygd/beszel:0.16.0
+    container_name: beszel-hub
+    restart: unless-stopped
+    networks:
+      - traefik
+      - beszel
+    volumes:
+      - /data/beszel/hub/data:/beszel_data
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    environment:
+      APP_URL: "https://beszel.home.$DOMAIN"
+      AUTO_LOGIN: "dpi0.dev@proton.me" # have the user with this email, be auto logged in
+      USER_EMAIL: "dpi0.dev@proton.me" # email of the first (admin) user
+      USER_PASSWORD: $BESZEL_ADMIN_USER_PASSWORD # password of the first (admin) user
+      DISABLE_PASSWORD_AUTH: false # disable password and use OAuth
+      SHARE_ALL_SYSTEMS: false
+      USER_CREATION: false
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik
+      traefik.http.routers.beszel-hub.entrypoints: websecure
+      traefik.http.routers.beszel-hub.rule: "Host(`beszel.home.$DOMAIN`)"
+  beszel-agent:
+    depends_on:
+      - beszel-hub
+      - beszel-agent-docker-socket-proxy
+    image: henrygd/beszel-agent:0.16.0
+    container_name: beszel-agent
+    restart: unless-stopped
+    hostname: beszel-agent
+    networks:
+      - beszel-agent-docker-socket-proxy
+      - beszel
+    volumes:
+      - /data/beszel/agent/data:/var/lib/beszel-agent
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    environment:
+      KEY: $BESZEL_AGENT_SSH_KEY
+      LOG_LEVEL: error
+      DOCKER_HOST: tcp://beszel-agent-docker-socket-proxy:2375
+    labels:
+      traefik.enable: false

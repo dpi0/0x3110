@@ -1,7 +1,7 @@
 # REFERENCE: https://pasted.drakeerv.com/8ixAw3xj
 # REFERNCE: the default /config/config.yaml in the beets container
 # DOCS: https://beets.readthedocs.io/en/stable/reference/config.html#global-options
-directory: /hdd/Media/Music # Library directory
+directory: /hdd/Library/Music # Library directory
 library: /data/db/musiclibrary.blb # Database for the Library
 art_filename: cover # Important cover-* for Navidrome to properly created album artwork
 threaded: yes # Use multiple cores for processing

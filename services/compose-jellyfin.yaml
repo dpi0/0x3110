@@ -1,0 +1,29 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:10.11.2
+    container_name: jellyfin
+    restart: unless-stopped
+    ports:
+      - 8096:8096
+    networks:
+      - traefik
+    volumes:
+      - /data/jellyfin/config:/config
+      - /data/jellyfin/metadata:/config/metadata
+      - /data/jellyfin/cache:/cache
+      - /hdd/Library/Movies/:/hdd/Library/Movies
+      - /hdd/Library/Television/:/hdd/Library/Television
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+    user: $PUID:$PGID
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: 0.5
+    labels:
+      traefik.enable: true
+      traefik.http.routers.jellyfin.entrypoints: websecure
+      traefik.http.routers.jellyfin.rule: "Host(`jellyfin.home.$DOMAIN`) || Host(`jellyfin.ts.$DOMAIN`)"

@@ -1,0 +1,67 @@
+services:
+  diun-docker-socket-proxy:
+    image: wollomatic/socket-proxy:1.10.0
+    container_name: diun-docker-socket-proxy
+    restart: unless-stopped
+    networks:
+      - diun-docker-socket-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    user: 65534:$DOCKER_SOCKET_PROXY_GID
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    command:
+      - -loglevel=info
+      - -allowfrom=diun
+      - -listenip=0.0.0.0
+      - -allowGET=/v1\.[0-9]+/(containers.*|images.*|events.*|info|version)|/_ping
+      - -allowHEAD=/_ping
+      - -watchdoginterval=300
+      - -stoponwatchdog
+      - -shutdowngracetime=10
+  diun:
+    depends_on:
+      - diun-docker-socket-proxy
+    image: crazymax/diun:4.31.0
+    container_name: diun
+    restart: unless-stopped
+    networks:
+      - traefik
+      - diun-docker-socket-proxy
+    volumes:
+      - /data/diun/data:/data
+    hostname: "0x3110"
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_OVERRIDE # Allows processes to bypass file read, write, and execute permission checks.
+    security_opt:
+      - no-new-privileges
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    environment:
+      TZ: $TZ
+      LOG_LEVEL: info
+      LOG_JSON: false
+      DIUN_WATCH_WORKERS: 20
+      DIUN_WATCH_SCHEDULE: "0 */12 * * *" # check every 12th hour, every day
+      DIUN_PROVIDERS_DOCKER: true
+      DIUN_PROVIDERS_DOCKER_WATCHBYDEFAULT: true # watch all containers by default (so that services don't require diun.enable=true label to be watched)
+      DIUN_PROVIDERS_DOCKER_WATCHSTOPPED: false # watch stopped/exited containers
+      DIUN_PROVIDERS_DOCKER_ENDPOINT: tcp://diun-docker-socket-proxy:2375
+      DIUN_NOTIF_DISCORD_WEBHOOKURL: $DIUN_NOTIF_DISCORD_WEBHOOKURL
+      DIUN_WATCH_RUNONSTARTUP: true
+    labels:
+      traefik.enable: false

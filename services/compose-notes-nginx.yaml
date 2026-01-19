@@ -1,0 +1,23 @@
+services:
+  notes-nginx:
+    depends_on:
+      - traefik
+    image: nginx:1.29.3
+    container_name: notes-nginx
+    restart: unless-stopped
+    networks:
+      - traefik
+      - notes-nginx
+    volumes:
+      - /srv/notes:/usr/share/nginx/html:ro
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik
+      traefik.http.routers.notes-nginx.entrypoints: websecure
+      traefik.http.routers.notes-nginx.rule: "Host(`notes.home.$DOMAIN`)"
+      traefik.http.services.notes-nginx.loadbalancer.server.port: 80

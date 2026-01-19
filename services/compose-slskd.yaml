@@ -1,0 +1,37 @@
+services:
+  slskd:
+    depends_on:
+      - traefik
+    image: slskd/slskd:0.24.0
+    container_name: slskd
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - /data/slskd/config:/config
+      - /hdd/Downloads/Music/Soulseek:/hdd/Downloads/Music/Soulseek
+      - /hdd/Library/Music:/hdd/Library/Music:ro
+    user: 1000:1000
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.5
+    environment:
+      # https://github.com/slskd/slskd/blob/master/docs/config.md
+      SLSKD_REMOTE_CONFIGURATION: true
+      SLSKD_SLSK_USERNAME: $SLSKD_SLSK_USERNAME
+      SLSKD_SLSK_PASSWORD: $SLSKD_SLSK_PASSWORD
+      SLSKD_NO_AUTH: false
+      SLSKD_USERNAME: $SLSKD_USERNAME
+      SLSKD_PASSWORD: $SLSKD_PASSWORD
+      SLSKD_JWT_KEY: $SLSKD_JWT_KEY
+      SLSKD_DOWNLOADS_DIR: /hdd/Downloads/Music/Soulseek/Complete
+      SLSKD_INCOMPLETE_DIR: /hdd/Downloads/Music/Soulseek/Incomplete
+      SLSKD_SHARED_DIR: /hdd/Library/Music # NOTE: Needs to be an absolute path
+      SLSKD_NO_CONFIG_WATCH: true # Don't watch the configuration file for changes
+    labels:
+      traefik.enable: true
+      traefik.http.routers.slskd.entrypoints: websecure
+      traefik.http.routers.slskd.rule: "Host(`slskd.home.$DOMAIN`)"
+      traefik.http.services.slskd.loadbalancer.server.port: 5030

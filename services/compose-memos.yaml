@@ -9,7 +9,7 @@ services:
       - traefik
       # - memos # NOTE: for newt
     volumes:
-      - /data/memos/data:/var/opt/memos:rw
+      - /data/memos/data:/var/opt/memos
     environment:
       MEMOS_PORT: 5230
       MEMOS_DATA: /var/opt/memos
