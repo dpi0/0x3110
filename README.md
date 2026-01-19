@@ -12,15 +12,14 @@ This machine is basically soldered into the wall with AC power and no battery. N
 
 Also, I've removed its display so it's kinda a leaner C64.
 
-Services that are meant to be run are present in `./compose.yaml`. To spin up: `docker compose up -d` in the root directory.
+## Directory Structure
 
-I've obviously excluded all instances of `.env` file from this repository. Fill it with your own values.
-
-The "archived" services are in `./services/` which I don't intend to run ATM. Barring `./services/immich/` (this beast needed it's own directory and separate configuration).
-
-For some services (like beets) which needed a long and separate configuration file, they have the `./config/` directory to them.
-
-Helper scripts (for notifications, alerting etc.) are placed in `./scripts/`.
+- Services are defined using individual compose files in `./services`. Like for Jellyfin we have `./services/compose-jellyfin.yaml`
+- The "entrypoint" file `./compose.yaml` allows me easily "enable/disable" each service by simply commenting out that service.
+- Immich, being the beast it is, needed it's own seperate directory in `./services/immich/`
+- I've obviously excluded all instances of `.env` file from this repository. Fill it with your own values.
+- For some services (like beets) which needed a long and separate configuration file, they have the `./config/` directory to them.
+- Helper scripts (for notifications, alerting etc.) are placed in `./scripts/`.
 
 Wiki for most services is present below.
 
