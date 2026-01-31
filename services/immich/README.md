@@ -1,11 +1,12 @@
 # Immich
 
-Docker: <https://docs.immich.app/install/docker-compose/>
+<https://docs.immich.app/install/docker-compose/>
 
 ```bash
 wget -O compose.yaml https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
 
-wget -O .env https://github.com/immich-app/immich/releases/latest/download/example.env
+# Do not use .env filename for the downloaded file. Rename manually.
+wget -O example.env https://github.com/immich-app/immich/releases/latest/download/example.env
 ```
 
 ## `./compose.yaml`
@@ -44,3 +45,24 @@ IMMICH_VERSION=v2.3.1
 > Immich will auto generate Postgres DB Backups regularly and place them in `UPLOAD_LOCATION/backups`.
 >
 > So make sure to backup this up. And run the restore <https://docs.immich.app/administration/backup-and-restore#manual-backup-and-restore>.
+
+Manual database backup (need the `immich_postgres` container to be running)
+
+```bash
+docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | gzip > "/data/immich/backup-manual-$(date +'%d-%b-%Y_%H-%M-%S').sql.gz"
+```
+
+Manual restore (when starting from scratch)
+
+```bash
+docker compose pull
+docker compose create
+docker start immich_postgres
+sleep 10
+
+gunzip --stdout "/data/immich/backup-manual-TIMESTAMP.sql.gz" \
+| sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
+| docker exec -i immich_postgres psql --dbname=postgres --username=postgres
+
+docker compose up -d
+```
