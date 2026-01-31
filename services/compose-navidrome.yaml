@@ -11,7 +11,7 @@ services:
       - traefik
     volumes:
       - /data/navidrome/data:/data
-      - /hdd/Library/Music/:/music
+      - /hdd/Library/Music/:/hdd/Library/Music
     user: 1000:1000
     deploy:
       resources:
@@ -20,7 +20,7 @@ services:
           cpus: 0.25
     environment:
       # https://www.navidrome.org/docs/usage/configuration-options/#available-options
-      ND_LOGLEVEL: warn
+      ND_LOGLEVEL: info
       ND_BASEURL: "https://music.home.$DOMAIN"
       ND_ENABLEINSIGHTSCOLLECTOR: true
       ND_DEFAULTTHEME: "Spotify-ish"
@@ -33,6 +33,9 @@ services:
       ND_SESSIONTIMEOUT: 72h
       ND_SHAREURL: "https://music.home.$DOMAIN"
       ND_UILOGINBACKGROUNDURL: "https://images.unsplash.com/photo-1602833703282-8f068d789005?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      ND_DEFAULTPLAYLISTPUBLICVISIBILITY: true # Set imported playlist as public
+      ND_MUSICFOLDER: "/hdd/Library/Music"
+      ND_PLAYLISTSPATH: "Playlists" # Relative to ND_MUSICFOLDER. Final path "/music/Playlists" or "/hdd/Library/Music/Playlists"
     labels:
       traefik.enable: true
       traefik.http.routers.navidrome.entrypoints: websecure
