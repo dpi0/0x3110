@@ -40,3 +40,7 @@ networks:
     attachable: false
   beszel:
     driver: bridge
+  dockhand-docker-socket-proxy:
+    driver: bridge
+    internal: true
+    attachable: false

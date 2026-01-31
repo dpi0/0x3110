@@ -1,0 +1,58 @@
+services:
+  dockhand-docker-socket-proxy:
+    image: wollomatic/socket-proxy:1.10.0
+    container_name: dockhand-docker-socket-proxy
+    restart: unless-stopped
+    networks:
+      - dockhand-docker-socket-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    user: 65534:$DOCKER_SOCKET_PROXY_GID
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: 0.25
+    command:
+      - -loglevel=info
+      - -allowfrom=dockhand
+      - -listenip=0.0.0.0
+      #- -allowGET=/v1\.[0-9]+/(containers.*|images.*|events.*|info|version)|/_ping
+      # NOTE: only below worked for dockhand to access the socket-proxy, not the usual above allowGET
+      - -allowGET=/(v1\.[0-9]+/)?(containers.*|images.*|networks.*|volumes.*|events.*|info|version|system/df)|/_ping
+      # NOTE: allow pulling docker images from docker-hub and ghcr.io
+      - -allowPOST=/(v1\.[0-9]+/)?images/create
+      - -allowHEAD=/_ping
+      - -watchdoginterval=300
+      - -stoponwatchdog
+      - -shutdowngracetime=10
+  dockhand:
+    depends_on:
+      - dockhand-docker-socket-proxy
+    image: fnsys/dockhand:v1.0.13
+    container_name: dockhand
+    restart: unless-stopped
+    networks:
+      - traefik
+      - dockhand-docker-socket-proxy
+    volumes:
+      - /data/dockhand/data:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.25
+    environment:
+      TZ: $TZ
+      # DOCKER_HOST: tcp://dockhand-docker-socket-proxy:2375
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik
+      traefik.http.routers.dockhand.entrypoints: websecure
+      traefik.http.routers.dockhand.rule: "Host(`dockhand.home.$DOMAIN`)"
+      traefik.http.services.dockhand.loadbalancer.server.port: 3000
