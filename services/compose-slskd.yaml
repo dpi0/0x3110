@@ -2,7 +2,7 @@ services:
   slskd:
     depends_on:
       - traefik
-    image: slskd/slskd:0.24.0
+    image: slskd/slskd:0.24.3
     container_name: slskd
     restart: unless-stopped
     networks:
