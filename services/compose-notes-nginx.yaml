@@ -2,7 +2,7 @@ services:
   notes-nginx:
     depends_on:
       - traefik
-    image: nginx:1.29.3
+    image: nginx:1.29.5
     container_name: notes-nginx
     restart: unless-stopped
     networks:
