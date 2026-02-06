@@ -10,7 +10,7 @@ It's glorious current specs are: Intel i3-3110M 2.4GHz quad-core CPU, a whopping
 
 This machine is basically soldered into the wall with AC power and no battery. No Wi-Fi, running a 10-gig Ethernet cable on this bad boy.
 
-Also, I've removed its display so it's kinda a leaner C64.
+Also, I've removed its display so it's almost a leaner C64.
 
 ## Directory Structure
 
@@ -62,9 +62,9 @@ For this service you need an external network: `docker network create traefik`
 
 The best torrent client.
 
-<img width="216" height="150" alt="image" src="https://github.com/user-attachments/assets/816bc30e-b15a-42f4-b2ba-a0a1259cb878" />
+<img width="216" height="150" alt="image" src="https://github.com/user-attachments/assets/7a3696c7-3f45-41ba-a5bb-78c7008e173a" />
 <br>
-<em>qb stats as of Jan 2026 🏴‍☠️</em>
+<em>qb stats as of Feb 2026 🏴‍☠️</em>
 
 ## Jellyfin - Media Library
 
