@@ -34,7 +34,6 @@ match:
 plugins:
   # - autobpm # Calc the BPM of a track (needs librosa and completey new and heavy docker image)
   # - chroma # Does Audio Fingerprinting to match files by sound. Useful when filesnames are wrong/bad metadata
-  # - discogs # Use the "Discogs" database for metadata
   - embedart # Embeds album artwork directly into audio files’ metadata
   - fetchart # Locates album artwork
   - fromfilename # Uses the filename for additional info about the track if not enough metadata is present
@@ -56,9 +55,6 @@ chroma:
   auto: yes
   search_limit: 5 # number of AcoustID matches evaluated per track (Increase (10–15) → very obscure music)
   data_source_mismatch_penalty: 0.5 # Prevent overriding good metadata (0.2–0.3 → strict, safer for curated libraries)
-# https://beets.readthedocs.io/en/stable/plugins/discogs.html
-discogs:
-  user_token: NLfeFeDNlTeDteGSYqhkATkhWLbdezoquLprPzbu
 # https://beets.readthedocs.io/en/stable/plugins/embedart.html#configuration
 embedart:
   auto: yes # When yes, will auto apply when running import (essentially auto enabling it)
@@ -100,8 +96,6 @@ musicbrainz:
   search_limit: 10
   extra_tags: [catalognum, country, label, media, year] # Only these extra tags are supported
   genres: yes
-  external_ids:
-    discogs: yes
 # https://beets.readthedocs.io/en/stable/plugins/scrub.html
 scrub:
   auto: yes
