@@ -2,7 +2,7 @@ services:
   navidrome:
     depends_on:
       - traefik
-    image: deluan/navidrome:0.59.0
+    image: deluan/navidrome:0.60.3
     container_name: navidrome
     restart: unless-stopped
     ports:
