@@ -44,11 +44,17 @@ plugins:
   - scrub # Removes all metadata before beets works on the files (prevents prev bad metadata leaks)
   # - smartplaylist # Create .m3u files for playlists
   - zero # Removes certain metadata (scrub was meant to remove all before import, but it doesn't work reliably imo)
+  # - bpmanalyser
 # PLUGIN CONFIGURATION
 # https://beets.readthedocs.io/en/stable/plugins/index.html
 # https://beets.readthedocs.io/en/stable/plugins/autobpm.html
 autobpm:
-  auto: yes
+  auto: no
+# https://github.com/adamjakab/BeetsPluginBpmAnalyser
+bpmanalyser:
+  auto: no
+  write: yes
+  force: no
 # https://beets.readthedocs.io/en/stable/plugins/chroma.html
 chroma:
   # auto: no # When no, not auto applied during imports (have to manually - beet chroma)
@@ -58,19 +64,16 @@ chroma:
 # https://beets.readthedocs.io/en/stable/plugins/embedart.html#configuration
 embedart:
   auto: yes # When yes, will auto apply when running import (essentially auto enabling it)
-  ifempty: yes # When yes, dpn't embed art if embedded art already present
+  ifempty: no # When yes, dpn't embed art if embedded art already present
 # https://beets.readthedocs.io/en/stable/plugins/fetchart.html#configuration
 fetchart:
   auto: yes # When yes, Auto enable during import
-  minwidth: 800 # In px, lower limit
+  minwidth: 1200 # In px, lower limit
   maxwidth: 0 # When 0, no upper limit
   high_resolution: yes # When yes, go for the highest-resolution art available
   cover_format: jpg # Only jpg images
   sources: # Searched in order
     - coverart # MusicBrainz Cover Art Archive
-    - itunes
-    - amazon
-    - filesystem
 # https://beets.readthedocs.io/en/stable/plugins/ftintitle.html#configuration
 ftintitle:
   auto: yes
@@ -86,7 +89,7 @@ lastgenre:
   keep_existing: no # Force replace existing tags (wiping them)
 # https://beets.readthedocs.io/en/stable/plugins/lyrics.html#configuration
 lyrics:
-  auto: yes
+  auto: no
   synced: yes # When yes, instead of plain lyrics used synced lyrics (from lrclib)
   force: yes # When yes, force download even when files already have them
   sources:

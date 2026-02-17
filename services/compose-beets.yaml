@@ -1,6 +1,6 @@
 services:
   beets:
-    image: ghcr.io/dpi0/beets-docker:3597a72
+    image: dpi0/beets-docker:1.0.0
     container_name: beets
     volumes:
       - /data/beets/config:/data/config
