@@ -16,14 +16,14 @@ services:
     deploy:
       resources:
         limits:
-          memory: 128M
-          cpus: 0.25
+          memory: 512M
+          cpus: 1.0
     environment:
       # https://www.navidrome.org/docs/usage/configuration-options/#available-options
       ND_LOGLEVEL: info
       ND_BASEURL: "https://music.home.$DOMAIN"
       ND_ENABLEINSIGHTSCOLLECTOR: true
-      ND_DEFAULTTHEME: "Spotify-ish"
+      ND_DEFAULTTHEME: "Nuclear"
       ND_LASTFM_ENABLED: true
       ND_LASTFM_APIKEY: $ND_LASTFM_APIKEY
       ND_LASTFM_SECRET: $ND_LASTFM_SECRET
