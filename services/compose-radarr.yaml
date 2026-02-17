@@ -1,0 +1,28 @@
+services:
+  radarr:
+    depends_on:
+      - traefik
+    image: lscr.io/linuxserver/radarr:6.0.4
+    container_name: radarr
+    restart: unless-stopped
+    networks:
+      - traefik
+    volumes:
+      - /data/radarr/config:/config
+      - /hdd/Library/Movies:/hdd/Library/Movies
+      # - /hdd/Downloads/Movies:/hdd/Downloads/Movies
+    user: $PUID:$PGID
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: 0.25
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+    labels:
+      traefik.enable: true
+      traefik.http.routers.radarr.entrypoints: websecure
+      traefik.http.routers.radarr.rule: "Host(`radarr.home.$DOMAIN`)"
+      traefik.http.services.radarr.loadbalancer.server.port: 7878
