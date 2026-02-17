@@ -15,7 +15,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 512M
           cpus: 0.5
     environment:
       # https://github.com/slskd/slskd/blob/master/docs/config.md
