@@ -11,7 +11,7 @@ services:
       - /data/qbittorrent/config:/config
       - /data/qbittorrent/themes:/themes
       - /hdd/Downloads:/hdd/Downloads
-      - ../scripts/discord_qbit_notification.sh:/config/discord_qbit_notification.sh
+      - ../scripts/telegram_qbit_notification.sh:/config/telegram_qbit_notification.sh
     deploy:
       resources:
         limits:
