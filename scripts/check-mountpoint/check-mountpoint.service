@@ -1,0 +1,7 @@
+[Unit]
+Description=Check mountpoint and notify via Discord/Telegram
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/check-mountpoint/env
+ExecStart=/usr/local/bin/check-mountpoint.sh

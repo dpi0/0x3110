@@ -1,0 +1,11 @@
+[Unit]
+Description=Run check-mountpoint.service every 5 minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+Unit=check-mountpoint.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target
