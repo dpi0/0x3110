@@ -1,0 +1,6 @@
+samba_server_string: 0x3110
+samba_workgroup: WORKGROUP
+samba_share1_name: library
+samba_share1_path: /v/library
+samba_share2_name: downloads
+samba_share2_path: /v/downloads

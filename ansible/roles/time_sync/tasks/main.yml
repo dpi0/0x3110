@@ -1,0 +1,11 @@
+- name: Set system timezone
+  community.general.timezone:
+    name: "{{ system_time_sync_timezone }}"
+- name: Set RTC to UTC
+  ansible.builtin.command: timedatectl set-local-rtc 0 --adjust-system-clock
+  changed_when: false
+- name: Ensure systemd-timesyncd is enabled and running
+  ansible.builtin.service:
+    name: systemd-timesyncd
+    enabled: true
+    state: started

@@ -1,0 +1,45 @@
+- name: Ensure unattended-upgrades is installed
+  ansible.builtin.apt:
+    name: unattended-upgrades
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+- name: Enable periodic unattended upgrades
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    owner: root
+    group: root
+    mode: '0644'
+    # This tells apt to:
+    # Refresh package lists daily (1 day)
+    # Run unattended-upgrades daily
+    # Auto clean /var/cache/apt/archives/ dir every 7 days
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+      APT::Periodic::AutocleanInterval "7";
+- name: Configure unattended-upgrades
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/99unattended-upgrades
+    owner: root
+    group: root
+    mode: '0644'
+    # Tells apt what to update:
+    # Allow updates from, Current Debian release and it's security repository
+    # Automatically reboot if required
+    # Reboot at 02:00
+    # Remove unused dependencies after upgrades
+    content: |
+      Unattended-Upgrade::Allowed-Origins {
+              "origin=Debian,codename=${distro_codename},label=Debian";
+              "origin=Debian,codename=${distro_codename},label=Debian-Security";
+              "origin=Debian,codename=${distro_codename}-security,label=Debian-Security";
+              "origin=Debian,codename=${distro_codename}-updates";
+      };
+
+      Unattended-Upgrade::Automatic-Reboot "true";
+      Unattended-Upgrade::Automatic-Reboot-Time "02:00";
+      Unattended-Upgrade::Remove-Unused-Dependencies "true";
+      Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
+      Unattended-Upgrade::MinimalSteps "true";
+      Unattended-Upgrade::InstallOnShutdown "false";

@@ -1,0 +1,49 @@
+[global]
+server string = {{ samba_server_string }}
+server role = standalone server
+server min protocol = SMB2
+server smb encrypt = auto
+security = user
+client min protocol = SMB2
+workgroup = WORKGROUP
+log file = /var/log/samba/%m.log
+max log size = 50
+map to guest = Bad User
+vfs objects = acl_xattr
+map acl inherit = yes
+store dos attributes = yes
+dos filemode = yes
+dos filetimes = yes
+log level = 1
+
+[{{ samba_share1_name }}]
+  path = {{ samba_share1_path }}
+  read only = no
+  guest ok = no
+  browseable = yes
+  valid users = @div
+  force user = div
+  force group = div
+  create mask = 0660
+  directory mask = 2770
+  smb encrypt = auto
+  case sensitive = no
+  preserve case = yes
+  short preserve case = yes
+  strict allocate = yes
+
+[{{ samba_share2_name }}]
+  path = {{ samba_share2_path }}
+  read only = no
+  guest ok = no
+  browseable = yes
+  valid users = @div
+  force user = div
+  force group = div
+  create mask = 0660
+  directory mask = 2770
+  smb encrypt = auto
+  case sensitive = no
+  preserve case = yes
+  short preserve case = yes
+  strict allocate = yes

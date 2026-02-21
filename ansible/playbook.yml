@@ -1,0 +1,13 @@
+- name: Setup 0x3110
+  hosts: "0x3110"
+  become: true
+  roles:
+    - packages
+    - time_sync
+    - grub_timeout
+    - user
+    - ssh
+    - firewall
+    - unattended_upgrades
+    - docker
+    - samba

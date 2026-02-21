@@ -1,0 +1,26 @@
+AuthorizedKeysFile %h/.ssh/authorized_keys
+Subsystem sftp internal-sftp
+Protocol 2
+Port {{ ssh_port }}
+LogLevel VERBOSE
+UsePAM yes
+
+AllowGroups sshusers
+PubkeyAuthentication yes
+PasswordAuthentication no
+PermitRootLogin no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+X11Forwarding no
+AllowTcpForwarding no
+AllowAgentForwarding no
+AllowStreamLocalForwarding no
+GatewayPorts no
+PermitTunnel no
+ClientAliveInterval {{ ssh_alive_interval_sec }}
+ClientAliveCountMax {{ ssh_alive_count_max }}
+LoginGraceTime {{ ssh_login_grace_time }}
+MaxAuthTries 5
+MaxSessions 2
+MaxStartups 2
+TCPKeepAlive no

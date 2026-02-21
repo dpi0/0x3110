@@ -1,0 +1,29 @@
+- name: Ensure groups exist
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ user_groups }}"
+- name: Ensure user exists
+  ansible.builtin.user:
+    name: "{{ user_name }}"
+    groups: "{{ user_groups }}"
+    append: false # don't append groups, replace them entirely
+    shell: /bin/bash
+    create_home: true
+    state: present
+- name: Limit sudo for group sudousers
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/90-sudousers
+    content: "%sudousers ALL=(ALL:ALL) ALL\n"
+    mode: '0440'
+    owner: root
+    group: root
+    validate: 'visudo -cf %s'
+- name: Allow passwordless sudo for group nopasswdusers
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/99-nopasswdusers # the number matters, it decides order. last numbered file has precedence.
+    content: "%nopasswdusers ALL=(ALL:ALL) NOPASSWD: ALL\n"
+    mode: '0440'
+    owner: root
+    group: root
+    validate: 'visudo -cf %s'

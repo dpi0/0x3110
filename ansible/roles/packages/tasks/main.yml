@@ -1,0 +1,26 @@
+- name: Update apt cache and perform dist-upgrade
+  ansible.builtin.apt:
+    update_cache: true # apt update (update pkg list)
+    cache_valid_time: 3600 # only run apt update if cache older than 1 hour
+    upgrade: dist # apt dist-upgrade (handle dependency changes)
+    autoremove: true # remove unused dependencies after upgrade
+    autoclean: true # clean files that are no longer downloadable
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - btop
+      - curl
+      - duf
+      - fd-find
+      - gdu
+      - git
+      - jq
+      - restic
+      - rsync
+      - systemd-timesyncd
+      - tmux
+      - tree
+      - ufw
+      - unzip
+      - vim
+    state: present

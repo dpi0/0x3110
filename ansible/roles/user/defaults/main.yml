@@ -1,0 +1,5 @@
+user_name: div
+user_groups:
+  - sshusers # allow ssh access
+  - sudousers # allow sudo access
+  - nopasswdusers # allow NOPASSWD access to sudo

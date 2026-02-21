@@ -1,0 +1,38 @@
+- name: Ensure ufw is installed
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+- name: Set default policies
+  community.general.ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+- name: Allow SSH with Rate Limiting
+  community.general.ufw:
+    rule: limit
+    port: "5538"
+    proto: tcp
+    comment: "SSH"
+- name: Allow Samba from Local Network Only
+  community.general.ufw:
+    rule: allow
+    from_ip: 10.0.0.0/27
+    port: "{{ item.port }}"
+    proto: "{{ item.proto }}"
+    comment: "Samba"
+  loop:
+    - {port: "137", proto: "udp"}
+    - {port: "138", proto: "udp"}
+    - {port: "139", proto: "tcp"}
+    - {port: "445", proto: "tcp"}
+- name: Allow Web Traffic
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+    comment: "Web"
+  loop:
+    - "80"
+    - "443"
