@@ -1,6 +1,6 @@
 services:
   beets:
-    image: dpi0/beets-docker:1.0.0
+    image: dpi0/beets-docker:1.2.0
     container_name: beets
     volumes:
       - /data/beets/config:/data/config
