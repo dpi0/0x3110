@@ -29,7 +29,7 @@ services:
   beszel-hub:
     depends_on:
       - traefik
-    image: henrygd/beszel:0.16.0
+    image: henrygd/beszel:0.18.4
     container_name: beszel-hub
     restart: unless-stopped
     networks:
