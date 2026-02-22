@@ -1,6 +1,6 @@
 services:
   beszel-agent-docker-socket-proxy:
-    image: wollomatic/socket-proxy:1.10.0
+    image: wollomatic/socket-proxy:1.11.3
     container_name: beszel-agent-docker-socket-proxy
     restart: unless-stopped
     networks:

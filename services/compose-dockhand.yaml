@@ -1,6 +1,6 @@
 services:
   dockhand-docker-socket-proxy:
-    image: wollomatic/socket-proxy:1.10.0
+    image: wollomatic/socket-proxy:1.11.3
     container_name: dockhand-docker-socket-proxy
     restart: unless-stopped
     networks:
