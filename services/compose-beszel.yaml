@@ -59,7 +59,7 @@ services:
     depends_on:
       - beszel-hub
       - beszel-agent-docker-socket-proxy
-    image: henrygd/beszel-agent:0.16.0
+    image: henrygd/beszel-agent:0.18.4
     container_name: beszel-agent
     restart: unless-stopped
     hostname: beszel-agent
