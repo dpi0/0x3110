@@ -2,7 +2,7 @@ services:
   memos:
     depends_on:
       - traefik
-    image: neosmemo/memos:0.25.2
+    image: neosmemo/memos:0.26.2
     container_name: memos
     restart: unless-stopped
     networks:
