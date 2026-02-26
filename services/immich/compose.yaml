@@ -18,8 +18,8 @@ services:
       # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
       - ${UPLOAD_LOCATION}:/data
       - /etc/localtime:/etc/localtime:ro
-      - ${EXT_PHOTOS}:/external/photos:ro
-      - ${EXT_VIDEOS}:/external/videos:ro
+      - $EXTERNAL_DIV_PHOTOS:/external/div/photos:ro
+      - $EXTERNAL_DIV_VIDEOS:/external/div/videos:ro
     env_file:
       - .env
     ports:
@@ -47,7 +47,7 @@ services:
   #     disable: false
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:9@sha256:fb8d272e529ea567b9bf1302245796f21a2672b8368ca3fcb938ac334e613c8f
+    image: docker.io/valkey/valkey:9@sha256:546304417feac0874c3dd576e0952c6bb8f06bb4093ea0c9ca303c73cf458f63
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
@@ -66,5 +66,7 @@ services:
       - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
     shm_size: 128mb
     restart: always
+    healthcheck:
+      disable: false
 volumes:
   model-cache:
