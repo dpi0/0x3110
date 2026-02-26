@@ -1,21 +1,26 @@
 include:
   # - ./services/compose-anonymousoverflow.yaml
-  - ./services/compose-backrest.yaml
   # - ./services/compose-beets.yaml
   # - ./services/compose-beszel-intel-gpu.yaml
-  - ./services/compose-beszel.yaml
   # - ./services/compose-cgit.yaml
-  - ./services/compose-diun.yaml
+  # - ./services/compose-diun.yaml
+  # - ./services/compose-dockhand.yaml
+  # - ./services/compose-dumbpad.yaml
   # - ./services/compose-forgejo-server.yaml
-  - ./services/compose-jellyfin.yaml
+  # - ./services/compose-jellyfin.yaml
   # - ./services/compose-memos.yaml
-  - ./services/compose-navidrome.yaml
   # - ./services/compose-newt.yaml
-  - ./services/compose-notes-nginx.yaml
-  - ./services/compose-qbittorrent.yaml
+  # - ./services/compose-notes-nginx.yaml
+  # - ./services/compose-pad.yaml
+  # - ./services/compose-radarr.yaml
   # - ./services/compose-slskd.yaml
-  - ./services/compose-syncthing.yaml
+  - ./services/compose-backrest.yaml
+  - ./services/compose-beszel.yaml
+  - ./services/compose-navidrome.yaml
   - ./services/compose-traefik.yaml
+  - ./services/compose-sonarr.yaml
+  - ./services/compose-syncthing.yaml
+  - ./services/compose-qbittorrent.yaml
 networks:
   traefik:
     external: true
@@ -24,15 +29,11 @@ networks:
     driver: bridge
     internal: true
     attachable: false
-  diun-docker-socket-proxy:
-    driver: bridge
-    internal: true
-    attachable: false
   backrest-docker-socket-proxy:
     driver: bridge
     internal: true
     attachable: false
-  notes-nginx: # NOTE: for newt
+  notes-nginx: # for newt
     driver: bridge
   beszel-agent-docker-socket-proxy:
     driver: bridge
@@ -40,7 +41,3 @@ networks:
     attachable: false
   beszel:
     driver: bridge
-  dockhand-docker-socket-proxy:
-    driver: bridge
-    internal: true
-    attachable: false
