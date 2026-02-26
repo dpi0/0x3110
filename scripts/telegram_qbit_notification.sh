@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Usage:
+# /config/telegram_qbit_notification.sh --bot-token "BOT_TOKEN" --chat-id CHAT_ID "%N" "%L" "%F" "%C" "%Z"
+
 while [ $# -gt 0 ]; do
   case "$1" in
   --bot-token)
@@ -19,7 +22,7 @@ done
 
 NAME="$1"
 CATEGORY="$2"
-CONTENT_PATH="$3"
+SAVE_PATH="$3"
 FILE_COUNT="$4"
 SIZE_BYTES="$5"
 
@@ -36,10 +39,8 @@ fi
 MESSAGE="🌀 <b>qBittorrent</b>
 ----------------------------
 ✅ $NAME
-$SIZE • $FILE_COUNT files
-$CATEGORY
-
-$CONTENT_PATH"
+$SIZE • $FILE_COUNT files • <i>$CATEGORY</i>
+$SAVE_PATH"
 
 curl -s \
   -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
