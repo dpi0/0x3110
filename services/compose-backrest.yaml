@@ -46,10 +46,8 @@ services:
       - $DATA/docker/backrest/cache:/cache
       - $DATA/docker/backrest/tmp:/tmp
       - $DATA/docker/backrest/config/rclone:/root/.config/rclone
-      - $DATA:/0x3110/data/docker:ro
-      - $DATA/immich:/0x3110/data/immich
+      - $DATA/docker:/0x3110/data/docker:ro
       - $DATA/immich/backups:/0x3110/data/immich/backups:ro
-      - $DATA/immich/library:/0x3110/data/immich/library:ro
     hostname: "0x3110"
     deploy:
       resources:
