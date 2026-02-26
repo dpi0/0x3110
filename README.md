@@ -60,7 +60,24 @@ For this service you need an external network: `docker network create traefik`
 
 <https://github.com/qbittorrent/qBittorrent/wiki/Installing-qBittorrent>
 
+<https://github.com/VueTorrent/VueTorrent/wiki/Installation>
+
 The best torrent client.
+
+For custom web UI, use the latest release of [VueTorrent](https://github.com/VueTorrent/VueTorrent).
+
+Clone the stable branch repository in `$DATA/docker/qbittorrent/themes` directory.
+
+```bash
+git clone --single-branch --branch latest-release https://github.com/VueTorrent/VueTorrent.git
+
+# update anytime using
+git pull
+```
+
+In the qbittorrent settings UI, `WebUI` > check `Use alternative WebUI` and `Files location` = `/themes/VueTorrent`
+
+Import the json settings for VueTorrent UI.
 
 <img width="216" height="150" alt="image" src="https://github.com/user-attachments/assets/7a3696c7-3f45-41ba-a5bb-78c7008e173a" />
 <br>
@@ -98,6 +115,13 @@ Allows machines to connect to the Pangolin server via tunnels.
 
 Take restic backups (rclone, sftp, http).
 
+Repositories
+
+1. Bind mount the `rclone.conf` with `dpi0dev-google-drive` configuration present.
+2. Repository URI: `rclone:dpi0dev-google-drive:PATH_ON_GDRIVE`
+3. Set Prune and Check policy to `30` days.
+4. Enable auto unlock (for single user only).
+
 ## Beszel - Lightweight Server Monitoring
 
 <https://github.com/henrygd/beszel>
@@ -119,7 +143,11 @@ After launching beszel-hub and heading to <https://beszel.home.DOMAIN/>,
 - Copy the "Public Key" and replace the $BESZEL_AGENT_SSH_KEY env variable
 - Restart the beszel-agent service.
 
-For the beszel-agent-intel-gpu, configure this kernel parameter on bare metal otherwise it shows "Failed to initialize PMU! (Permission denied)" error.
+Set `Webhook / Push notifications` in <https://beszel.home.DOMAIN/settings/notifications> using `Shoutrrr`
+
+For telegram the format is `telegram://BOT_TOKEN@telegram?chats=CHAT_ID`
+
+For the `beszel-agent-intel-gpu`, configure this kernel parameter on bare metal otherwise it shows "Failed to initialize PMU! (Permission denied)" error.
 
 <https://github.com/henrygd/beszel/issues/1150#issuecomment-3475126281>
 
@@ -128,39 +156,6 @@ sudo sysctl kernel.perf_event_paranoid=0
 ```
 
 <img width="710" height="400" alt="image" src="https://github.com/user-attachments/assets/6ef84b78-bad3-4b60-8c8a-7cbcd34fd5b5" />
-
-## `mount-point-alert.go`
-
-Provides alerting for drive mount connection.
-
-Build
-
-```bash
-GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o mount-point-alert ./scripts/mount-point-alert.go
-```
-
-And move the built `mount-point-alert` binary to `/usr/local/bin/mount-point-alert`
-
-Create `/etc/systemd/system/mount-point-alert.service`
-
-```bash
-[Unit]
-Description=Mount Point Alert
-After=network.target
-
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/mount-point-alert
-Restart=always
-User=nobody
-CapabilityBoundingSet=
-NoNewPrivileges=yes
-
-[Install]
-WantedBy=multi-user.target
-```
-
-And, `sudo systemctl daemon-reload && sudo systemctl enable --now mount-point-alert; systemctl status mount-point-alert`
 
 ## Navidrome - Music Server
 
