@@ -68,8 +68,8 @@ embedart:
 # https://beets.readthedocs.io/en/stable/plugins/fetchart.html#configuration
 fetchart:
   auto: yes # When yes, Auto enable during import
-  minwidth: 1200 # In px, lower limit
-  maxwidth: 0 # When 0, no upper limit
+  minwidth: 1000 # In px, lower limit
+  maxwidth: 1500 # When 0, no upper limit
   high_resolution: yes # When yes, go for the highest-resolution art available
   cover_format: jpg # Only jpg images
   sources: # Searched in order
