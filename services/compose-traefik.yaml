@@ -35,14 +35,11 @@ services:
     ports:
       - 80:80
       - 443:443
-    dns:
-      - 1.1.1.1
-      - 8.8.8.8
     networks:
       - traefik
       - traefik-docker-socket-proxy
     volumes:
-      - /data/traefik/certs:/traefik/certs
+      - $DATA/docker/traefik/certs:/traefik/certs
     security_opt:
       - no-new-privileges:true
     environment:

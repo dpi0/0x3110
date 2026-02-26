@@ -8,9 +8,9 @@ services:
     networks:
       - traefik
     volumes:
-      - /data/qbittorrent/config:/config
-      - /data/qbittorrent/themes:/themes
-      - /hdd/Downloads:/hdd/Downloads
+      - $DATA/docker/qbittorrent/config:/config
+      - $DATA/docker/qbittorrent/themes:/themes
+      - $DATA/downloads:/data/downloads
       - ../scripts/telegram_qbit_notification.sh:/config/telegram_qbit_notification.sh
     deploy:
       resources:

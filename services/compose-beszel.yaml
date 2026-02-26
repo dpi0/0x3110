@@ -36,7 +36,7 @@ services:
       - traefik
       - beszel
     volumes:
-      - /data/beszel/hub/data:/beszel_data
+      - $DATA/docker/beszel/hub/data:/beszel_data
     deploy:
       resources:
         limits:
@@ -67,7 +67,7 @@ services:
       - beszel-agent-docker-socket-proxy
       - beszel
     volumes:
-      - /data/beszel/agent/data:/var/lib/beszel-agent
+      - $DATA/docker/beszel/agent/data:/var/lib/beszel-agent
     deploy:
       resources:
         limits:

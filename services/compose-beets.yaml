@@ -1,14 +1,14 @@
 services:
   beets:
-    image: dpi0/beets-docker:1.0.0
+    image: dpi0/beets-docker:minimal-v1.0.0
     container_name: beets
     volumes:
-      - /data/beets/config:/data/config
+      - $DATA/docker/beets/config:/data/config
       - ../config/beets-config.yaml:/data/config/config.yaml
-      - /data/beets/db:/data/db
-      - /data/beets/logs:/data/logs
-      - /hdd/Downloads/Music:/hdd/Downloads/Music
-      - /hdd/Library/Music:/hdd/Library/Music
+      - $DATA/docker/beets/db:/data/db
+      - $DATA/docker/beets/logs:/data/logs
+      - $DATA/downloads/Music:$DATA/downloads/Music
+      - $DATA/library/Music:$DATA/library/Music
     user: "1000:1000"
     deploy:
       resources:
@@ -21,4 +21,4 @@ services:
       TZ: $TZ
       BEETSDIR: /data/config
     labels:
-      traefik.enable: false # NOTE: I've removed the beets "web" plugin. So no WEB UI.
+      traefik.enable: false

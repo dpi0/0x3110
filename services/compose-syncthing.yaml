@@ -8,8 +8,8 @@ services:
     networks:
       - traefik
     volumes:
-      - /data/syncthing/config:/config
-      - /hdd/Backup/Syncthing:/hdd/Backup/Syncthing
+      - $DATA/docker/syncthing/config:/config
+      - $DATA/backup/syncthing:/0x3110/data/backup/syncthing
     environment:
       PUID: $PUID
       PGID: $PGID

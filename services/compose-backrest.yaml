@@ -41,16 +41,15 @@ services:
       - traefik
       - backrest-docker-socket-proxy
     volumes:
-      - /data/backrest/config:/config
-      - /data/backrest/data:/data
-      - /data/backrest/cache:/cache
-      - /data/backrest/tmp:/tmp
-      - /data/backrest/config/rclone:/root/.config/rclone
-      - /data:/0x3110/data:ro
-      - /data/immich:/0x3110/data/immich
-      - /hdd/Immich/backups:/0x3110/hdd/Immich/backups:ro
-      - /hdd/Immich/library:/0x3110/hdd/Immich/library:ro
-      - /space/Backup:/0x3110/space/Backup
+      - $DATA/docker/backrest/config:/config
+      - $DATA/docker/backrest/data:/data
+      - $DATA/docker/backrest/cache:/cache
+      - $DATA/docker/backrest/tmp:/tmp
+      - $DATA/docker/backrest/config/rclone:/root/.config/rclone
+      - $DATA:/0x3110/data/docker:ro
+      - $DATA/immich:/0x3110/data/immich
+      - $DATA/immich/backups:/0x3110/data/immich/backups:ro
+      - $DATA/immich/library:/0x3110/data/immich/library:ro
     hostname: "0x3110"
     deploy:
       resources:

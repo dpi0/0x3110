@@ -8,9 +8,9 @@ services:
     networks:
       - traefik
     volumes:
-      - /data/sonarr/config:/config
-      - /hdd/Library/Television:/hdd/Library/Television
-      # - /hdd/Downloads/TV:/hdd/Downloads/TV
+      - $DATA/docker/sonarr/config:/config
+      - /data/library/Television:/data/library/Television
+      # - /data/downloads/TV:/data/downloads/TV
     user: $PUID:$PGID
     deploy:
       resources:
